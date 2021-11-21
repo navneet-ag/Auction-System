@@ -1,5 +1,5 @@
-// pragma solidity >=0.4.22 <0.9.0;
-pragma solidity ^0.4.8;
+pragma solidity >=0.4.22 <0.9.0;
+// pragma solidity ^0.4.8;
 contract Auction {
     address public owner;
     
@@ -17,10 +17,10 @@ contract Auction {
     
     string public title;
     
-    function Auction  (address  _owner, uint _startBlock, uint _endBlock, string  _ipfsHash, string  _title, uint _startingPrice){
+    constructor (address  _owner, uint _startBlock, uint _endBlock, string  memory _ipfsHash, string  memory _title, uint _startingPrice) public {
         if (_startBlock >= _endBlock) revert();
         if (_startBlock < block.number) revert();
-        if (_owner == 0) throw;
+        if (_owner == address(0)) revert();
         if (bytes(_ipfsHash).length == 0) revert();
         if (bytes(_title).length == 0) revert();
         if (_startingPrice<0) revert();
@@ -34,7 +34,7 @@ contract Auction {
     }
     
     function getHighestBid()
-        constant
+        public view
         returns (uint)
     {
         return fundsByBidder[highestBidder];
@@ -52,7 +52,7 @@ contract Auction {
         onlyNotOwner
         onlyHigherprice
         public returns (bool success) {
-            if (msg.value == 0) throw;
+            if (msg.value == 0) revert();
             // uint highestBid = fundsByBidder[highestBidder];
             fundsByBidder[msg.sender] = msg.value;
             
@@ -60,22 +60,24 @@ contract Auction {
                 highestBindingBid = msg.value;
                 highestBidder = msg.sender;
             }
-            LogBid(msg.sender, msg.value, highestBidder, highestBindingBid);
+            emit LogBid(msg.sender, msg.value, highestBidder, highestBindingBid);
             return true;
         }
     
     function cancelAuction()
+        public
         onlyOwner
         onlyBeforeEnd
         onlyNotCanceled
         returns (bool success)
     {
         canceled = true;
-        LogCanceled();
+        emit LogCanceled();
         return true;
     }
     
     function withdraw()
+        public
         onlyEndedOrCanceled
         returns (bool success)
     {
@@ -98,7 +100,7 @@ contract Auction {
 
             } 
             else if (msg.sender == highestBidder) {
-               throw;
+               revert();
             } 
             else {
                 // anyone who participated but did not win the auction should be allowed to withdraw
@@ -108,14 +110,14 @@ contract Auction {
             }
         }
 
-        if (withdrawalAmount == 0) throw;
+        if (withdrawalAmount == 0) revert();
 
         fundsByBidder[withdrawalAccount] -= withdrawalAmount;
 
         // send the funds
-        if (!msg.sender.send(withdrawalAmount)) throw;
+        if (!msg.sender.send(withdrawalAmount)) revert();
 
-        LogWithdrawal(msg.sender, withdrawalAccount, withdrawalAmount);
+        emit LogWithdrawal(msg.sender, withdrawalAccount, withdrawalAmount);
 
         return true;
     }
