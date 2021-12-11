@@ -17,22 +17,32 @@ contract Auction {
     
     string public title;
     
-    constructor (address  _owner, uint _startBlock, uint _endBlock, string  memory _ipfsHash, string  memory _title, uint _startingPrice) public {
-        if (_startBlock >= _endBlock) revert();
-        if (_startBlock < block.number) revert();
+    // constructor (address  _owner, uint _startBlock, uint _endBlock, string  memory _ipfsHash, string  memory _title, uint _startingPrice) public {
+    //     if (_startBlock >= _endBlock) revert();
+    //     if (_startBlock < block.number) revert();
+    //     if (_owner == address(0)) revert();
+    //     if (bytes(_ipfsHash).length == 0) revert();
+    //     if (bytes(_title).length == 0) revert();
+    //     if (_startingPrice<0) revert();
+        
+    //     title = _title;
+    //     startingPrice = _startingPrice;
+    //     owner = _owner;
+    //     startBlock = _startBlock;
+    //     endBlock = _endBlock;
+    //     ipfsHash = _ipfsHash;
+    // }
+
+    constructor (address  _owner, string  memory _title, uint _startingPrice) public {
         if (_owner == address(0)) revert();
-        if (bytes(_ipfsHash).length == 0) revert();
         if (bytes(_title).length == 0) revert();
         if (_startingPrice<0) revert();
         
         title = _title;
         startingPrice = _startingPrice;
         owner = _owner;
-        startBlock = _startBlock;
-        endBlock = _endBlock;
-        ipfsHash = _ipfsHash;
     }
-    
+
     function getHighestBid()
         public view
         returns (uint)

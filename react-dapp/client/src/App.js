@@ -1,12 +1,26 @@
 import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import AuctionContract from "./contracts/Auction.json";
+import AuctionBoxContract from "./contracts/AuctionBox.json";
+
 import getWeb3 from "./getWeb3";
 
 import "./App.css";
 
 class App extends Component {
-  state = { storageValue: "", web3: null, accounts: null, contract: null, newValue: ""};
+  state = { storageValue: "",
+            web3: null, 
+            accounts: null, 
+            contract: null, 
+            newValue: "",
+            title:"",
+            price:"",
+            ipfshash:"",
+            startdate:"",
+            starttime:"",
+            enddate:"",
+            endtime:""
+          };
 
   componentDidMount = async () => {
     try {
@@ -52,9 +66,10 @@ class App extends Component {
     const web3 = this.state.web3;
     console.log("ye bhi chal rha hai");
     const networkId = await web3.eth.net.getId();
-    const deployedNetwork = AuctionContract.networks[networkId];
+    console.log("working 3");
+    const deployedNetwork = AuctionBoxContract.networks[networkId];
     const auctionInstance = new web3.eth.Contract(
-      AuctionContract.abi,
+      AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
     // const name = this.state.title;
@@ -62,14 +77,11 @@ class App extends Component {
     this.setState({auctionContract: auctionInstance})
     // const { auctionContract } = this.state;
     const {accounts, contract} = this.state;
-    auctionContract = auctionInstance.new(accounts[0],this.state.title)
+    const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
+    await auctionInstance.methods.createAuction(this.state.title,BidPrice)
+    console.log(auctionInstance.methods.returnAllAuctions());
     // await auctionContract.methods.
     
-    
-    // const {accounts, contract} = this.state;
-    await contract.methods.set(this.state.newValue).send({from: accounts[0]});
-    const response = await contract.methods.get().call();
-    this.setState({storageValue: response});
   }
   runExample = async () => {
     const { contract } = this.state;
@@ -89,9 +101,9 @@ class App extends Component {
     return (
       <div className="App">
         <h1>Welcome to this dapp!</h1>
-        <div>Swastik likes : {this.state.storageValue}</div>
+        {/* <div>Swastik likes : {this.state.storageValue}</div> */}
         <form onSubmit={this.handleSubmit.bind(this)}>
-        <input type="text" name="newValue" value={this.state.newValue} onChange={this.handleChange.bind(this)}/><br/>
+        {/* <input type="text" name="newValue" value={this.state.newValue} onChange={this.handleChange.bind(this)}/><br/> */}
         <label>Title:
           <input 
             type="text" 
