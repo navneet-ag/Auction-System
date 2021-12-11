@@ -54,9 +54,9 @@ class App extends Component {
   };
   
   handleChange(event){
-    const name = event.target.name;
-    const value = event.target.value;
-    this.setState({[name]: value});
+    // const name = event.target.name;
+    // const value = event.target.value;
+    // this.setState({[name]: value});
     // this.setState({newValue: event.target.value});
   }
 
@@ -72,13 +72,14 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
+    auctionInstance.options.address = "0xE3E8281FAfd1E21e29D217361A08Eb54099Cd85B"
     // const name = this.state.title;
     console.log(this.state);
     this.setState({auctionContract: auctionInstance})
     // const { auctionContract } = this.state;
     const {accounts, contract} = this.state;
     const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
-    await auctionInstance.methods.createAuction(this.state.title,BidPrice)
+    await auctionInstance.methods.createAuction(this.state.title,BidPrice).send({from:accounts[0]});
     console.log(auctionInstance.methods.returnAllAuctions());
     // await auctionContract.methods.
     
