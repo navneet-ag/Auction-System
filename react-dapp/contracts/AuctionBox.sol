@@ -17,7 +17,7 @@ contract AuctionBox{
     
     // function returnAllAuctions() public view returns(Auction[] memory){
     function returnAllAuctions() public view returns(string memory){
-        return "working";
+        return "working 123 123";
         // return auctions;
     }
 }

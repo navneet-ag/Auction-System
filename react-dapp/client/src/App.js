@@ -54,9 +54,9 @@ class App extends Component {
   };
   
   handleChange(event){
-    // const name = event.target.name;
-    // const value = event.target.value;
-    // this.setState({[name]: value});
+    const name = event.target.name;
+    const value = event.target.value;
+    this.setState({[name]: value});
     // this.setState({newValue: event.target.value});
   }
 
@@ -72,7 +72,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0xE3E8281FAfd1E21e29D217361A08Eb54099Cd85B"
+    auctionInstance.options.address = "0xcC82D6979773F44D02f760821B92a1D8Bc310Fca"
     // const name = this.state.title;
     console.log(this.state);
     this.setState({auctionContract: auctionInstance})
@@ -80,7 +80,7 @@ class App extends Component {
     const {accounts, contract} = this.state;
     const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
     await auctionInstance.methods.createAuction(this.state.title,BidPrice).send({from:accounts[0]});
-    console.log(auctionInstance.methods.returnAllAuctions());
+    console.log(auctionInstance.methods.returnAllAuctions().call());
     // await auctionContract.methods.
     
   }
@@ -98,7 +98,7 @@ class App extends Component {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
-    console.log(this.state.storageValue);
+    // console.log(this.state.storageValue);
     return (
       <div className="App">
         <h1>Welcome to this dapp!</h1>
