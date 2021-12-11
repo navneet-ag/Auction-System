@@ -74,6 +74,20 @@ contract Auction {
             return true;
         }
     
+    function getTitle()
+        public
+        returns (string memory )
+    {
+        return title;
+    }
+
+    function getPrice()
+        public
+        returns (uint)
+    {
+        return startingPrice;
+    }
+
     function cancelAuction()
         public
         onlyOwner
