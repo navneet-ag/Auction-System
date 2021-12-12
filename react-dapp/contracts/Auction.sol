@@ -1,39 +1,23 @@
 pragma solidity >=0.4.22 <0.9.0;
 // pragma solidity ^0.4.8;
+
 contract Auction {
     address payable public owner;
     
-    uint public startBlock;
-    uint public endBlock;
-    
-    string public ipfsHash;
+    string public title;
+    uint public startTime;
+    uint public endTime;
+    string public description;
     bool public canceled;
+    uint public startingPrice;
     
     address payable public highestBidder;
     mapping(address => uint256) public fundsByBidder;
     uint public highestBindingBid = 0;
-    uint public startingPrice;   // Starting price of the auction
-    bool ownerHasWithdrawn;
+          
     
-    string public title;
     
-    // constructor (address  _owner, uint _startBlock, uint _endBlock, string  memory _ipfsHash, string  memory _title, uint _startingPrice) public {
-    //     if (_startBlock >= _endBlock) revert();
-    //     if (_startBlock < block.number) revert();
-    //     if (_owner == address(0)) revert();
-    //     if (bytes(_ipfsHash).length == 0) revert();
-    //     if (bytes(_title).length == 0) revert();
-    //     if (_startingPrice<0) revert();
-        
-    //     title = _title;
-    //     startingPrice = _startingPrice;
-    //     owner = _owner;
-    //     startBlock = _startBlock;
-    //     endBlock = _endBlock;
-    //     ipfsHash = _ipfsHash;
-    // }
-
-    constructor (address payable _owner, string  memory _title, uint _startingPrice) public {
+    constructor (address payable  _owner, string  memory _title, uint _startingPrice, uint _startTime, uint _endTime, string memory _description) public {
         if (_owner == address(0)) revert();
         if (bytes(_title).length == 0) revert();
         if (_startingPrice<0) revert();
@@ -41,6 +25,9 @@ contract Auction {
         title = _title;
         startingPrice = _startingPrice;
         owner = _owner;
+        startTime = _startTime;
+        endTime = _endTime;
+        description = _description;
     }
 
     function getHighestBid()
@@ -56,22 +43,19 @@ contract Auction {
     
     function placeBid ()
         payable
-        // onlyAfterStart
-        // onlyBeforeEnd
+        onlyAfterStart
+        onlyBeforeEnd
         onlyNotCanceled
         onlyNotOwner
-        onlyHigherprice
         public returns (bool success) {
             if (msg.value == 0) revert();
-            // uint highestBid = fundsByBidder[highestBidder];
-            fundsByBidder[msg.sender] = msg.value;
+            fundsByBidder[msg.sender] += msg.value;
             
             if (highestBindingBid<msg.value){
                 highestBindingBid = msg.value;
                 highestBidder = msg.sender;
             }
             emit LogBid(msg.sender, msg.value, highestBidder, highestBindingBid);
-
             return true;
         }
     
@@ -79,14 +63,28 @@ contract Auction {
         public
         returns (string memory )
     {
+
         return title;
     }
 
+    function test()
+        public 
+        returns (uint)
+    {
+        return now;
+    }
     function getPrice()
         public
         returns (uint)
-    {
+    {   
         return startingPrice;
+    }
+
+    function getDescription()
+        public
+        returns (string memory)
+    {
+        return description;
     }
 
     function cancelAuction()
@@ -101,7 +99,6 @@ contract Auction {
         return true;
     }
     
-
     function withdraw() public{
         //the owner and bidders can finalize the auction.
         // require(msg.sender == owner || bids[msg.sender] > 0);
@@ -128,7 +125,6 @@ contract Auction {
         fundsByBidder[msg.sender] = 0;
         recipiant.transfer(value);
     }
-
     
     modifier onlyOwner {
         if (msg.sender != owner) revert();
@@ -140,13 +136,13 @@ contract Auction {
         _;
     }
 
-    // modifier onlyAfterStart {
-    //     if (block.number < startBlock) revert();
-    //     _;
-    // }
+    modifier onlyAfterStart {
+        if (now < startTime) revert();
+        _;
+    }
 
     modifier onlyBeforeEnd {
-        if (block.number > endBlock) revert();
+        if (now > endTime) revert();
         _;
     }
 
@@ -156,7 +152,7 @@ contract Auction {
     }
 
     modifier onlyEndedOrCanceled {
-        if (block.number < endBlock && !canceled) revert();
+        if (block.number < endTime && !canceled) revert();
         _;
     }
     
