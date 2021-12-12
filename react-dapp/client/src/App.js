@@ -83,7 +83,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x54a2fA6C13a01EDeb9Ca2B7092A2Bf222078fa0f"
+    auctionInstance.options.address = "0x1e2FaD454989C18616E7De4ac43c68fdB77F9B35"
     const response = await auctionInstance.methods.returnAllAuctions().call();
     this.setState({auctionList: response});
     const index = response.length-1;
@@ -107,7 +107,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x54a2fA6C13a01EDeb9Ca2B7092A2Bf222078fa0f"
+    auctionInstance.options.address = "0x1e2FaD454989C18616E7De4ac43c68fdB77F9B35"
     this.setState({auctionContract: auctionInstance})
     const {accounts, contract} = this.state;
     const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
@@ -148,12 +148,12 @@ class App extends Component {
     const web3 = this.state.web3;
     const networkId = await web3.eth.net.getId();
     const deployedNetwork = AuctionBoxContract.networks[networkId];
-    console.log("yayyayayay");
-    console.log(this.state.auctionBidPrice);
-    const bidPriceWei = web3.utils.toWei(this.state.auctionBidPrice, 'ether');
-    const fromAddress = web3.eth.accounts.givenProvider.selectedAddress;
-    console.log("ahhahahahahahha");
-    console.log(this.state.auctionList);
+    // console.log("yayyayayay");
+    // console.log(this.state.auctionBidPrice);
+    // const bidPriceWei = web3.utils.toWei(this.state.auctionBidPrice, 'ether');
+    // const fromAddress = web3.eth.accounts.givenProvider.selectedAddress;
+    // console.log("ahhahahahahahha");
+    // console.log(this.state.auctionList);
     // console.log(this.state.auctionObject.price);
     const selectedAuction = new web3.eth.Contract(
       AuctionContract.abi,
@@ -162,15 +162,15 @@ class App extends Component {
     selectedAuction.options.address = this.state.auctionObject.address;
     // const selectedAuction = AuctionContract(this.state.auctionObject.address);
     // this.state.isBid = true;
+    const { accounts } = this.state;
     const ans = await selectedAuction.methods
-        .placeBid()
+        .withdraw()
         .send({
-          from: fromAddress,
-          value: bidPriceWei,
+          from: accounts[0]
         });
-    console.log("yahan kya hua hai");
+    console.log("ab batao yahan kya hua hai");
     console.log(ans);
-    console.log("maja hi aa gaya");
+    console.log("firse maja hi aa gaya");
   }
   
   handleBidAuction(o){
@@ -235,7 +235,7 @@ class App extends Component {
         <div class="form-group">
         <label>Starting Date:
           <input 
-            type="text" 
+            type="date" 
             name="startdate" 
             value={this.state.startdate || ""} 
             onChange={this.handleChange.bind(this)}
@@ -245,7 +245,7 @@ class App extends Component {
         <div class="form-group">
         <label>Starting Time:
           <input 
-            type="text" 
+            type="time" 
             name="starttime" 
             value={this.state.starttime || ""} 
             onChange={this.handleChange.bind(this)}
@@ -255,7 +255,7 @@ class App extends Component {
         <div class="form-group">
         <label>Ending Date:
           <input 
-            type="text" 
+            type="date" 
             name="enddate" 
             value={this.state.enddate || ""} 
             onChange={this.handleChange.bind(this)}
@@ -265,7 +265,7 @@ class App extends Component {
         <div class="form-group">
         <label>Ending Time:
           <input 
-            type="text" 
+            type="time" 
             name="endtime" 
             value={this.state.endtime || ""} 
             onChange={this.handleChange.bind(this)}

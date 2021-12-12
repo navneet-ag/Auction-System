@@ -1,7 +1,7 @@
 pragma solidity >=0.4.22 <0.9.0;
 // pragma solidity ^0.4.8;
 contract Auction {
-    address public owner;
+    address payable public owner;
     
     uint public startBlock;
     uint public endBlock;
@@ -9,7 +9,7 @@ contract Auction {
     string public ipfsHash;
     bool public canceled;
     
-    address public highestBidder;
+    address payable public highestBidder;
     mapping(address => uint256) public fundsByBidder;
     uint public highestBindingBid = 0;
     uint public startingPrice;   // Starting price of the auction
@@ -33,7 +33,7 @@ contract Auction {
     //     ipfsHash = _ipfsHash;
     // }
 
-    constructor (address  _owner, string  memory _title, uint _startingPrice) public {
+    constructor (address payable _owner, string  memory _title, uint _startingPrice) public {
         if (_owner == address(0)) revert();
         if (bytes(_title).length == 0) revert();
         if (_startingPrice<0) revert();
@@ -71,7 +71,7 @@ contract Auction {
                 highestBidder = msg.sender;
             }
             emit LogBid(msg.sender, msg.value, highestBidder, highestBindingBid);
-            
+
             return true;
         }
     
@@ -101,50 +101,32 @@ contract Auction {
         return true;
     }
     
-    function withdraw()
-        public
-        onlyEndedOrCanceled
-        returns (bool success)
-    {
-        address withdrawalAccount;
-        uint withdrawalAmount;
 
-        if (canceled) {
-            // if the auction was canceled, everyone should simply be allowed to withdraw their funds
-            withdrawalAccount = msg.sender;
-            withdrawalAmount = fundsByBidder[withdrawalAccount];
+    function withdraw() public{
+        //the owner and bidders can finalize the auction.
+        // require(msg.sender == owner || bids[msg.sender] > 0);
 
-        } else {
-            // the auction finished without being canceled
+        address payable recipiant;
+        uint value;
 
-            if (msg.sender == owner) {
-                // the auction's owner should be allowed to withdraw the highestBindingBid
-                withdrawalAccount = highestBidder;
-                withdrawalAmount = highestBindingBid;
-                ownerHasWithdrawn = true;
-
-            } 
-            else if (msg.sender == highestBidder) {
-               revert();
-            } 
-            else {
-                // anyone who participated but did not win the auction should be allowed to withdraw
-                // the full amount of their funds
-                withdrawalAccount = msg.sender;
-                withdrawalAmount = fundsByBidder[withdrawalAccount];
-            }
+        // owner can get highestPrice
+        if(msg.sender == owner){
+            recipiant = owner;
+            value = highestBindingBid;
         }
-
-        if (withdrawalAmount == 0) revert();
-
-        fundsByBidder[withdrawalAccount] -= withdrawalAmount;
-
-        // send the funds
-        if (!msg.sender.send(withdrawalAmount)) revert();
-
-        emit LogWithdrawal(msg.sender, withdrawalAccount, withdrawalAmount);
-
-        return true;
+        // highestBidder can get no money
+        else if (msg.sender == highestBidder){
+            recipiant = highestBidder;
+            value = 0;
+        }
+        // Other bidders can get back the money 
+        else {
+            recipiant = msg.sender;
+            value = fundsByBidder[msg.sender];
+        }
+        // initialize the value
+        fundsByBidder[msg.sender] = 0;
+        recipiant.transfer(value);
     }
 
     
