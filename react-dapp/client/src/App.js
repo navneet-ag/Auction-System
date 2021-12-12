@@ -4,7 +4,7 @@ import AuctionContract from "./contracts/Auction.json";
 import AuctionBoxContract from "./contracts/AuctionBox.json";
 import { Row, Card, CardBody, CardTitle, CardSubtitle, CardText, Button, Col, Table } from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import moment from 'moment'
 import getWeb3 from "./getWeb3";
 
 import "./App.css";
@@ -17,7 +17,7 @@ class App extends Component {
             newValue: "",
             title:"",
             price:"",
-            ipfshash:"",
+            description:"",
             startdate:"",
             starttime:"",
             enddate:"",
@@ -64,6 +64,7 @@ class App extends Component {
     const name = event.target.name;
     const value = event.target.value;
     this.setState({[name]: value});
+
     // this.setState({newValue: event.target.value});
   }
   handleBidChange(event){
@@ -75,6 +76,7 @@ class App extends Component {
   }
   async allAuctions(event){
     event.preventDefault();
+
     const web3 = this.state.web3;
     const networkId = await web3.eth.net.getId();
     const deployedNetwork = AuctionBoxContract.networks[networkId];
@@ -83,7 +85,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x1e2FaD454989C18616E7De4ac43c68fdB77F9B35"
+    auctionInstance.options.address = "0x4f881F8F3983E234b3BAF755564f7665BD4c71f7"
     const response = await auctionInstance.methods.returnAllAuctions().call();
     this.setState({auctionList: response});
     const index = response.length-1;
@@ -93,7 +95,13 @@ class App extends Component {
         deployedNetwork && deployedNetwork.address,
       );
       auction_1.options.address = item;
-      return {title: await auction_1.methods.getTitle().call(),address: auction_1.options.address, price: await auction_1.methods.getPrice().call()}
+      return {title: await auction_1.methods.getTitle().call(),
+              address: auction_1.options.address, 
+              price: await auction_1.methods.getPrice().call(),
+              starttime:await auction_1.methods.getStartTime().call(),
+              endtime:await auction_1.methods.getEndTime().call(),
+              description: await auction_1.methods.getDescription().call()
+            }
   }))
     console.log(individualAuction);
     this.setState({auctionListJSON: individualAuction})
@@ -107,13 +115,23 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x1e2FaD454989C18616E7De4ac43c68fdB77F9B35"
+    auctionInstance.options.address = "0x4f881F8F3983E234b3BAF755564f7665BD4c71f7"
     this.setState({auctionContract: auctionInstance})
     const {accounts, contract} = this.state;
     const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
-    await auctionInstance.methods.createAuction(this.state.title,BidPrice).send({from:accounts[0]});
+    var ContractStartDate = moment(this.state.startdate + ' ' + this.state.starttime).toDate();    
+    var ContractStartUnixTime = Date.parse(ContractStartDate)/1000;
+
+    var ContractEndDate = moment(this.state.enddate + ' ' + this.state.endtime).toDate();    
+    var ContractEndUnixTime = Date.parse(ContractEndDate)/1000;
+    console.log(this.state.title);
+    console.log(BidPrice);
+    console.log(ContractStartUnixTime);
+    console.log(ContractEndUnixTime);
+    console.log(this.state.description);
+    await auctionInstance.methods.createAuction(this.state.title,BidPrice,ContractStartUnixTime,ContractEndUnixTime,this.state.description).send({from:accounts[0]});
     
-    console.log( auctionInstance.methods.returnAllAuctions().call());
+    // console.log( auctionInstance.methods.returnAllAuctions().call());
     
   }
   async handleBidSubmit(){
@@ -189,15 +207,21 @@ class App extends Component {
       Header: 'Title',  
       accessor: 'title'  
       },{  
-      Header: 'Address',  
-      accessor: 'address'  
-      },{  
       Header: 'Price',  
       accessor: 'price'  
       },{
-      Header: 'Bid Here',
-      accessor: 'bid'
-      }]
+      Header: 'Start time',
+      accessor: 'start time'
+      },{
+        Header: 'End time',
+        accessor: 'end time'
+      },{
+        Header: 'Description',
+        accessor: 'description'
+      },{
+        Header: 'Bid Here',
+        accessor: 'bid'
+        }]
     return (
       <div className="App">
         <h1>Welcome to this dapp!</h1>
@@ -223,11 +247,11 @@ class App extends Component {
         </label>
         </div>
         <div class="form-group">
-        <label>IPFS Hash:
+        <label>Description:
           <input 
             type="text" 
-            name="ipfshash" 
-            value={this.state.ipfshash || ""} 
+            name="description" 
+            value={this.state.description || ""} 
             onChange={this.handleChange.bind(this)}
           />
         </label>
@@ -283,7 +307,7 @@ class App extends Component {
 						<tr>{columns.map((name)=>(<td>{name.Header}</td>))}</tr>
 					</thead>
           <tbody>
-            {this.state.auctionListJSON.map((o)=>(<tr><td>{o.title}</td><td>{o.address}</td><td>{o.price}</td><td><input type="button" value="Bid" 
+            {this.state.auctionListJSON.map((o)=>(<tr><td>{o.title}</td><td>{o.price}</td><td>{o.starttime}</td><td>{o.endtime}</td><td>{o.description}</td><td><input type="button" value="Bid" 
             onClick={()=>this.handleBidAuction(o)}/></td></tr>))}
           </tbody>
 				</Table>

@@ -7,9 +7,9 @@ contract AuctionBox{
    
     function createAuction (
         string memory _title,
+        uint _startingPrice,
         uint _startTime,
         uint _endTime,
-        uint _startingPrice,
         string memory _description
         ) public{
         // set the new instance
