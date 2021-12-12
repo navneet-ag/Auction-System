@@ -2,6 +2,11 @@ import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import AuctionContract from "./contracts/Auction.json";
 import AuctionBoxContract from "./contracts/AuctionBox.json";
+import { Card, CardBody, CardTitle, CardSubtitle, CardText, Button, Col, Table } from 'reactstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import ReactTable from "react-table";  
+// import "react-table/react-table.css"; 
+
 
 import getWeb3 from "./getWeb3";
 
@@ -20,7 +25,10 @@ class App extends Component {
             starttime:"",
             enddate:"",
             endtime:"",
-            auctionList:[]
+            auctionList:[],
+            auctionListJSON:[],
+            auctionObject: [],
+            auctionBidPrice:0
           };
 
   componentDidMount = async () => {
@@ -60,6 +68,13 @@ class App extends Component {
     this.setState({[name]: value});
     // this.setState({newValue: event.target.value});
   }
+  handleBidChange(event){
+    const name = event.target.name;
+    const value = event.target.value || 0;
+    console.log(value);
+    this.setState({[name]: value});
+    // this.setState({newValue: event.target.value});
+  }
   async allAuctions(event){
     event.preventDefault();
     const web3 = this.state.web3;
@@ -84,29 +99,18 @@ class App extends Component {
     const index = response.length-1;
     // console.log(response[index]);
     // console.log(response[index-1]);
-    
-    const auction_1 = new web3.eth.Contract(
-      AuctionContract.abi,
-      deployedNetwork && deployedNetwork.address,
-    );
-    auction_1.options.address = response[index];
-    console.log(await auction_1.methods.getTitle().call());
-    console.log(await auction_1.methods.getPrice().call());
-
-
-    const quotes = [
-      {text: 'Whatever the mind of man can conceive and believe, it can achieve.',
-      author: 'Napoleon Hill'},
-      {text: 'Strive not to be a success, but rather to be of value.',
-      author: 'Albert Einstein'},
-      {text: 'I attribute my success to this: I never gave or took any excuse.',
-      author: 'Florence Nightingale'},
-      {text: 'You miss 100% of the shots you don’t take.',
-      author: 'Wayne Gretzky'}
-    ];
-    for(var i=0; i<=index;i++){
-
-    }
+    const individualAuction = await Promise.all(response.map(async(item)=>{
+      const auction_1 = new web3.eth.Contract(
+        AuctionContract.abi,
+        deployedNetwork && deployedNetwork.address,
+      );
+      auction_1.options.address = item;
+      // console.log(await auction_1.methods.getTitle().call());
+      // console.log(await auction_1.methods.getPrice().call());
+      return {title: await auction_1.methods.getTitle().call(), price: await auction_1.methods.getPrice().call()}
+  }))
+    console.log(individualAuction);
+    this.setState({auctionListJSON: individualAuction})
 
 
   }
@@ -128,54 +132,36 @@ class App extends Component {
     console.log( auctionInstance.methods.returnAllAuctions().call());
     
   }
-  runExample = async () => {
-    const { contract } = this.state;
-
-    // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
-
-    // Update state with the result.
-    this.setState({ storageValue: response });
-  };
-
-  // async handleAuctionAdded(i, event) {
-  //   var auctionList = this.state.auctionList;
-  //   auctionList[i] = event.target.value;
-  //   this.setState({
-  //     auctionList: auctionList
-  //   });
-  // }
-  // renderRows() {
-  //   var context = this;
-  //   const index = this.state.auctionList.length-1;
-  //   console.log("main idhar hun");
-  //   console.log(this.state.auctionList);
-  //   console.log("main idhar nhi hun");
-    
-  //   return this.state.auctionList.map(function(o, i){
-  //     return (
-  //       <tr key={"item-"+i}>
-  //         <td>
-  //           <input type="text" value={o} onChange={this.handleAuctionAdded.bind(this, i)}/>
-  //         </td>
-  //       </tr>
-
-  //     );
-  //   });
-  // }
-
+  handleBidAuction(o){
+    console.log("ooo yeah baby");
+    console.log(o.price);
+    console.log(o.title);
+    this.setState({auctionObject: o})
+  }
+  handleBidSubmit(){
+    console.log("yayyayayay");
+    console.log(this.state.auctionBidPrice);
+  }
 
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
-    // console.log(this.state.storageValue);
+    const columns = [{  
+      Header: 'Title',  
+      accessor: 'title'  
+      },{  
+      Header: 'Price',  
+      accessor: 'price'  
+      },{
+      Header: 'Bid Here',
+      accessor: 'bid'
+      }]
     return (
       <div className="App">
         <h1>Welcome to this dapp!</h1>
-        {/* <div>Swastik likes : {this.state.storageValue}</div> */}
         <form onSubmit={this.handleSubmit.bind(this)}>
-        {/* <input type="text" name="newValue" value={this.state.newValue} onChange={this.handleChange.bind(this)}/><br/> */}
+        <div class="form-group">
         <label>Title:
           <input 
             type="text" 
@@ -183,8 +169,9 @@ class App extends Component {
             value={this.state.title || ""} 
             onChange={this.handleChange.bind(this)}
           />
-        <br/>
         </label>
+        </div>
+        <div class="form-group">
         <label>Starting Price:
           <input 
             type="text" 
@@ -192,8 +179,9 @@ class App extends Component {
             value={this.state.price || ""} 
             onChange={this.handleChange.bind(this)}
           />
-        <br/>
         </label>
+        </div>
+        <div class="form-group">
         <label>IPFS Hash:
           <input 
             type="text" 
@@ -201,8 +189,9 @@ class App extends Component {
             value={this.state.ipfshash || ""} 
             onChange={this.handleChange.bind(this)}
           />
-        <br/>
         </label>
+        </div>
+        <div class="form-group">
         <label>Starting Date:
           <input 
             type="text" 
@@ -210,8 +199,9 @@ class App extends Component {
             value={this.state.startdate || ""} 
             onChange={this.handleChange.bind(this)}
           />
-        <br/>
         </label>
+        </div>
+        <div class="form-group">
         <label>Starting Time:
           <input 
             type="text" 
@@ -219,8 +209,9 @@ class App extends Component {
             value={this.state.starttime || ""} 
             onChange={this.handleChange.bind(this)}
           />
-        <br/>
         </label>
+        </div>
+        <div class="form-group">
         <label>Ending Date:
           <input 
             type="text" 
@@ -228,8 +219,9 @@ class App extends Component {
             value={this.state.enddate || ""} 
             onChange={this.handleChange.bind(this)}
           />
-        <br/>
         </label>
+        </div>
+        <div class="form-group">
         <label>Ending Time:
           <input 
             type="text" 
@@ -237,34 +229,49 @@ class App extends Component {
             value={this.state.endtime || ""} 
             onChange={this.handleChange.bind(this)}
           />
-        <br/>
         </label>
+        </div>
           <input type="submit" value="Create Auction"/>
         </form>
         <form onSubmit={this.allAuctions.bind(this)}>
           <input type="submit" value="View All Auction"/>
         </form>
         <div>
-        <table className="">
-          <thead>
-            <tr>
-              <th>
-                Item
-              </th>
-              <th>
-                Actions
-              </th>
-            </tr>
-          </thead>
+        <Table striped hover responsive className="border">
+					<thead>
+						<tr>{columns.map((name)=>(<td>{name.Header}</td>))}</tr>
+					</thead>
           <tbody>
-            {/* {this.renderRows()} */}
+            {this.state.auctionListJSON.map((o)=>(<tr><td>{o.title}</td><td>{o.price}</td><td><input type="button" value="Bid" 
+            onClick={()=>this.handleBidAuction(o)}/></td></tr>))}
           </tbody>
-        </table>
+				</Table>
+          <Card>
+            <CardBody>
+              <CardTitle tag="h5">
+                {this.state.auctionObject.title}
+              </CardTitle>
+              <CardSubtitle
+                className="mb-2 text-muted"
+                tag="h6"
+              >
+                {this.state.auctionObject.price}
+              </CardSubtitle>
+              <CardText>
+                Please enter the amount you want to bid here:
+                <input 
+                  type="number" 
+                  name="auctionBidPrice" 
+                  // value={this.state.auctionBidPrice} 
+                  onChange={this.handleBidChange.bind(this)}
+                /> 
+              </CardText>
+              <Button onClick={this.handleBidSubmit.bind(this)}>
+                BID
+              </Button>
+            </CardBody>
+          </Card>
         </div>
-
-
-
-
       </div>
 
     );
