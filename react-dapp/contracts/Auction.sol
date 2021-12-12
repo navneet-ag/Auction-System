@@ -8,7 +8,6 @@ contract Auction {
     uint public startTime;
     uint public endTime;
     string public description;
-    bool public canceled;
     uint public startingPrice;
     
     address payable public highestBidder;
@@ -45,7 +44,6 @@ contract Auction {
         payable
         onlyAfterStart
         onlyBeforeEnd
-        onlyNotCanceled
         onlyNotOwner
         public returns (bool success) {
             if (msg.value == 0) revert();
@@ -87,17 +85,6 @@ contract Auction {
         return description;
     }
 
-    function cancelAuction()
-        public
-        onlyOwner
-        onlyBeforeEnd
-        onlyNotCanceled
-        returns (bool success)
-    {
-        canceled = true;
-        emit LogCanceled();
-        return true;
-    }
     
     function withdraw() public{
         //the owner and bidders can finalize the auction.
@@ -146,13 +133,9 @@ contract Auction {
         _;
     }
 
-    modifier onlyNotCanceled {
-        if (canceled) revert();
-        _;
-    }
 
     modifier onlyEndedOrCanceled {
-        if (block.number < endTime && !canceled) revert();
+        if (block.number < endTime) revert();
         _;
     }
     
