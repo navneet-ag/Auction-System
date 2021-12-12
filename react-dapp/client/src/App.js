@@ -2,11 +2,8 @@ import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import AuctionContract from "./contracts/Auction.json";
 import AuctionBoxContract from "./contracts/AuctionBox.json";
-import { Card, CardBody, CardTitle, CardSubtitle, CardText, Button, Col, Table } from 'reactstrap';
+import { Row, Card, CardBody, CardTitle, CardSubtitle, CardText, Button, Col, Table } from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import ReactTable from "react-table";  
-// import "react-table/react-table.css"; 
-
 
 import getWeb3 from "./getWeb3";
 
@@ -28,7 +25,8 @@ class App extends Component {
             auctionList:[],
             auctionListJSON:[],
             auctionObject: [],
-            auctionBidPrice:0
+            auctionBidPrice:0,
+            isBid:""
           };
 
   componentDidMount = async () => {
@@ -87,32 +85,18 @@ class App extends Component {
     );
     auctionInstance.options.address = "0x54a2fA6C13a01EDeb9Ca2B7092A2Bf222078fa0f"
     const response = await auctionInstance.methods.returnAllAuctions().call();
-    
     this.setState({auctionList: response});
-    // console.log(this.state.auctionList);
-    
-    // const data = await response.json();
-    // const index = this.state.auctionList.length-1;
-    // console.log(this.state.auctionList[index]);
-    // console.log(this.state.auctionList[index-1]);
-
     const index = response.length-1;
-    // console.log(response[index]);
-    // console.log(response[index-1]);
     const individualAuction = await Promise.all(response.map(async(item)=>{
       const auction_1 = new web3.eth.Contract(
         AuctionContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
       auction_1.options.address = item;
-      // console.log(await auction_1.methods.getTitle().call());
-      // console.log(await auction_1.methods.getPrice().call());
-      return {title: await auction_1.methods.getTitle().call(), price: await auction_1.methods.getPrice().call()}
+      return {title: await auction_1.methods.getTitle().call(),address: auction_1.options.address, price: await auction_1.methods.getPrice().call()}
   }))
     console.log(individualAuction);
     this.setState({auctionListJSON: individualAuction})
-
-
   }
   async handleSubmit(event){
     event.preventDefault();
@@ -132,17 +116,71 @@ class App extends Component {
     console.log( auctionInstance.methods.returnAllAuctions().call());
     
   }
+  async handleBidSubmit(){
+    const web3 = this.state.web3;
+    const networkId = await web3.eth.net.getId();
+    const deployedNetwork = AuctionBoxContract.networks[networkId];
+    console.log("yayyayayay");
+    console.log(this.state.auctionBidPrice);
+    const bidPriceWei = web3.utils.toWei(this.state.auctionBidPrice, 'ether');
+    const fromAddress = web3.eth.accounts.givenProvider.selectedAddress;
+    console.log("ahhahahahahahha");
+    console.log(this.state.auctionList);
+    // console.log(this.state.auctionObject.price);
+    const selectedAuction = new web3.eth.Contract(
+      AuctionContract.abi,
+      deployedNetwork && deployedNetwork.address,
+    );
+    selectedAuction.options.address = this.state.auctionObject.address;
+    // const selectedAuction = AuctionContract(this.state.auctionObject.address);
+    // this.state.isBid = true;
+    const ans = await selectedAuction.methods
+        .placeBid()
+        .send({
+          from: fromAddress,
+          value: bidPriceWei,
+        });
+    console.log("yahan kya hua hai");
+    console.log(ans);
+    console.log("maja hi aa gaya");
+  }
+  async handleWithdraw(){
+    const web3 = this.state.web3;
+    const networkId = await web3.eth.net.getId();
+    const deployedNetwork = AuctionBoxContract.networks[networkId];
+    console.log("yayyayayay");
+    console.log(this.state.auctionBidPrice);
+    const bidPriceWei = web3.utils.toWei(this.state.auctionBidPrice, 'ether');
+    const fromAddress = web3.eth.accounts.givenProvider.selectedAddress;
+    console.log("ahhahahahahahha");
+    console.log(this.state.auctionList);
+    // console.log(this.state.auctionObject.price);
+    const selectedAuction = new web3.eth.Contract(
+      AuctionContract.abi,
+      deployedNetwork && deployedNetwork.address,
+    );
+    selectedAuction.options.address = this.state.auctionObject.address;
+    // const selectedAuction = AuctionContract(this.state.auctionObject.address);
+    // this.state.isBid = true;
+    const ans = await selectedAuction.methods
+        .placeBid()
+        .send({
+          from: fromAddress,
+          value: bidPriceWei,
+        });
+    console.log("yahan kya hua hai");
+    console.log(ans);
+    console.log("maja hi aa gaya");
+  }
+  
   handleBidAuction(o){
     console.log("ooo yeah baby");
     console.log(o.price);
     console.log(o.title);
     this.setState({auctionObject: o})
+    // console.log(this.state.auctionObject.price)
+    console.log("main mar jawa");
   }
-  handleBidSubmit(){
-    console.log("yayyayayay");
-    console.log(this.state.auctionBidPrice);
-  }
-
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -150,6 +188,9 @@ class App extends Component {
     const columns = [{  
       Header: 'Title',  
       accessor: 'title'  
+      },{  
+      Header: 'Address',  
+      accessor: 'address'  
       },{  
       Header: 'Price',  
       accessor: 'price'  
@@ -242,7 +283,7 @@ class App extends Component {
 						<tr>{columns.map((name)=>(<td>{name.Header}</td>))}</tr>
 					</thead>
           <tbody>
-            {this.state.auctionListJSON.map((o)=>(<tr><td>{o.title}</td><td>{o.price}</td><td><input type="button" value="Bid" 
+            {this.state.auctionListJSON.map((o)=>(<tr><td>{o.title}</td><td>{o.address}</td><td>{o.price}</td><td><input type="button" value="Bid" 
             onClick={()=>this.handleBidAuction(o)}/></td></tr>))}
           </tbody>
 				</Table>
@@ -266,9 +307,15 @@ class App extends Component {
                   onChange={this.handleBidChange.bind(this)}
                 /> 
               </CardText>
-              <Button onClick={this.handleBidSubmit.bind(this)}>
-                BID
-              </Button>
+              <Row>
+                <Button onClick={this.handleBidSubmit.bind(this)}>
+                  BID
+                </Button>
+                
+                <Button style = {{color:'blue'}} onClick={this.handleWithdraw.bind(this)}>
+                  WITHDRAW
+                </Button>
+              </Row>
             </CardBody>
           </Card>
         </div>

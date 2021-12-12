@@ -71,6 +71,7 @@ contract Auction {
                 highestBidder = msg.sender;
             }
             emit LogBid(msg.sender, msg.value, highestBidder, highestBindingBid);
+            
             return true;
         }
     
