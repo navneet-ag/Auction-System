@@ -38,8 +38,44 @@ contract Auction {
     
     event LogBid(address bidder, uint bid, address highestBidder, uint highestBindingBid);
     event LogWithdrawal(address withdrawer, address withdrawalAccount, uint amount);
-    event LogCanceled();
-    
+
+
+    function getTitle()
+        public
+        returns (string memory )
+    {
+
+        return title;
+    }
+
+    function getStartTime()
+        public 
+        returns (uint)
+    {
+        return startTime;
+    }
+
+    function getEndTime()
+        public 
+        returns (uint)
+    {
+        return endTime;
+    }
+
+    function getPrice()
+        public
+        returns (uint)
+    {   
+        return startingPrice;
+    }
+
+    function getDescription()
+        public
+        returns (string memory)
+    {
+        return description;
+    }
+
     function placeBid ()
         payable
         onlyAfterStart
@@ -56,36 +92,7 @@ contract Auction {
             emit LogBid(msg.sender, msg.value, highestBidder, highestBindingBid);
             return true;
         }
-    
-    function getTitle()
-        public
-        returns (string memory )
-    {
-
-        return title;
-    }
-
-    function test()
-        public 
-        returns (uint)
-    {
-        return now;
-    }
-    function getPrice()
-        public
-        returns (uint)
-    {   
-        return startingPrice;
-    }
-
-    function getDescription()
-        public
-        returns (string memory)
-    {
-        return description;
-    }
-
-    
+        
     function withdraw() public{
         //the owner and bidders can finalize the auction.
         // require(msg.sender == owner || bids[msg.sender] > 0);
