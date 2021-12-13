@@ -16,10 +16,13 @@ contract Auction {
           
     
     
-    constructor (address payable  _owner, string  memory _title, uint _startingPrice, uint _startTime, uint _endTime, string memory _description) public {
-        if (_owner == address(0)) revert();
+    constructor (address payable  _owner, string  memory _title, uint _startingPrice, uint _startTime, uint _endTime, string memory _description) 
+        onlyNotOwner 
+        onlyHigherprice
+        public {
+        // if (_owner == address(0)) revert();
         if (bytes(_title).length == 0) revert();
-        if (_startingPrice<0) revert();
+        // if (_startingPrice<0) revert();
         
         title = _title;
         startingPrice = _startingPrice;
@@ -81,8 +84,8 @@ contract Auction {
         onlyAfterStart
         onlyBeforeEnd
         onlyNotOwner
+        onlyHigherprice
         public returns (bool success) {
-            if (msg.value == 0) revert();
             fundsByBidder[msg.sender] += msg.value;
             
             if (highestBindingBid<msg.value){
@@ -150,4 +153,5 @@ contract Auction {
         if (startingPrice > msg.value) revert();
         _;
     }
+
 }

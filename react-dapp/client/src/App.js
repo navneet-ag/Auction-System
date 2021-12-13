@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import moment from 'moment'
 import getWeb3 from "./getWeb3";
 
+
 import "./App.css";
 
 class App extends Component {
@@ -172,14 +173,21 @@ class App extends Component {
     selectedAuction.options.address = this.state.auctionObject.address;
     // const selectedAuction = AuctionContract(this.state.auctionObject.address);
     // this.state.isBid = true;
-    const ans = await selectedAuction.methods
+    
+    try {
+      const ans = await selectedAuction.methods
         .placeBid()
         .send({
           from: fromAddress,
           value: bidPriceWei,
         });
+      }catch(error)
+      {
+        console.log("Error in bidding");
+        await alert(" Error in bidding \n Please make sure you that : \n 1) You are not the owner of this contract \n 2) Current Time is beyond start time and before end time \n 3) Your bid is not below the starting Price");
+      }
     console.log("yahan kya hua hai");
-    console.log(ans);
+    // console.log(ans);
     console.log("maja hi aa gaya");
   }
   async handleWithdraw(){
@@ -321,6 +329,7 @@ class App extends Component {
         <form onSubmit={this.allAuctions.bind(this)}>
           <input type="submit" value="View All Auction"/>
         </form>
+        
         <div>
         <Table striped hover responsive className="border">
 					<thead>
@@ -356,7 +365,7 @@ class App extends Component {
                   BID
                 </Button>
                 
-                <Button style = {{color:'blue'}} onClick={this.handleWithdraw.bind(this)}>
+                <Button style = {{color:'blue'}} onClick={this.handleWithdraw.bind(this)} >
                   WITHDRAW
                 </Button>
               </Row>
@@ -364,7 +373,6 @@ class App extends Component {
           </Card>
         </div>
       </div>
-
     );
   }
 }
