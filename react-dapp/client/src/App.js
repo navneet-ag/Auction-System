@@ -97,9 +97,29 @@ class App extends Component {
       auction_1.options.address = item;
       return {title: await auction_1.methods.getTitle().call(),
               address: auction_1.options.address, 
-              price: await auction_1.methods.getPrice().call(),
-              starttime:await auction_1.methods.getStartTime().call(),
-              endtime:await auction_1.methods.getEndTime().call(),
+              price: web3.utils.fromWei(await auction_1.methods.getPrice().call() ,'ether'),
+              starttime: new Intl.DateTimeFormat('en-US', 
+                                                { year: 'numeric',
+                                                  month: '2-digit',
+                                                  day: '2-digit', 
+                                                  hour: '2-digit', 
+                                                  minute: '2-digit', 
+                                                  second: '2-digit' 
+                                                }
+                                                ).format(
+                                                        await auction_1.methods.getStartTime().call()*1000
+                                                        ),
+              endtime:new Intl.DateTimeFormat('en-US', 
+                                              { year: 'numeric',
+                                                month: '2-digit',
+                                                day: '2-digit', 
+                                                hour: '2-digit', 
+                                                minute: '2-digit', 
+                                                second: '2-digit' 
+                                              }
+                                              ).format(
+                                                      await auction_1.methods.getEndTime().call()*1000
+                                                      ),
               description: await auction_1.methods.getDescription().call()
             }
   }))
@@ -207,7 +227,7 @@ class App extends Component {
       Header: 'Title',  
       accessor: 'title'  
       },{  
-      Header: 'Price',  
+      Header: 'Starting Price(ether)',  
       accessor: 'price'  
       },{
       Header: 'Start time',
