@@ -3,9 +3,15 @@ import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import AuctionContract from "./contracts/Auction.json";
 import AuctionBoxContract from "./contracts/AuctionBox.json";
 import { Row, Card, CardBody, CardTitle, CardSubtitle, CardText, Button, Col, Table } from 'reactstrap';
+import { BrowserRouter as Router,Routes, Route, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import moment from 'moment'
 import getWeb3 from "./getWeb3";
+
+import AuctionList from './component/auctionList';
+import BidAuction from './component/bidAuction';
+// import Main from './component/main'
+
 
 
 import "./App.css";
@@ -27,7 +33,8 @@ class App extends Component {
             auctionListJSON:[],
             auctionObject: [],
             auctionBidPrice:0,
-            isBid:""
+            isBid:"",
+            tablecolumns: []
           };
 
   componentDidMount = async () => {
@@ -86,7 +93,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x73607ab44eE6De9a800bD528A587c6640a540d9C"
+    auctionInstance.options.address = "0x1e2FaD454989C18616E7De4ac43c68fdB77F9B35"
     const response = await auctionInstance.methods.returnAllAuctions().call();
     this.setState({auctionList: response});
     const index = response.length-1;
@@ -136,7 +143,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x73607ab44eE6De9a800bD528A587c6640a540d9C"
+    auctionInstance.options.address = "0x1e2FaD454989C18616E7De4ac43c68fdB77F9B35"
     this.setState({auctionContract: auctionInstance})
     const {accounts, contract} = this.state;
     const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
@@ -262,11 +269,30 @@ class App extends Component {
         Header: 'Bid Here',
         accessor: 'bid'
         }]
+      // this.setState({ tablecolumns: columns});
     return (
+      <Router>
       <div className="App">
-        <h1>Welcome to this dapp!</h1>
+        <h1>AUCTIONEERS</h1>
+        <ul className="App-header">
+              <li>
+                <Link to="/">Create Auction</Link>
+              </li>
+              <li>
+                <Link to="/auctionlist">All Auctions</Link>
+              </li>
+              <li>
+                <Link to="/bidauction">Bid on Auction</Link>
+              </li>
+            </ul>
+           <Routes>
+                 <Route exact path='/' element={< App />}></Route>
+                 <Route exact path='/auctionlist' element={< AuctionList />}></Route>
+                 <Route exact path='/bidauction' element={< BidAuction />}></Route>
+          </Routes>
+        <div>
         <form onSubmit={this.handleSubmit.bind(this)}>
-        <div class="form-group">
+        <div className="form-group">
         <label>Title:
           <input 
             type="text" 
@@ -276,7 +302,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Starting Price:
           <input 
             type="text" 
@@ -286,7 +312,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Description:
           <input 
             type="text" 
@@ -296,7 +322,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Starting Date:
           <input 
             type="date" 
@@ -306,7 +332,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Starting Time:
           <input 
             type="time" 
@@ -316,7 +342,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Ending Date:
           <input 
             type="date" 
@@ -326,7 +352,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Ending Time:
           <input 
             type="time" 
@@ -339,10 +365,8 @@ class App extends Component {
           <input type="submit" value="Create Auction"/>
         </form>
         <form onSubmit={this.allAuctions.bind(this)}>
-          <input type="submit" value="View All Auction"/>
+          <input type="submit" value="View All Auction" />
         </form>
-        
-        <div>
         <Table striped hover responsive className="border">
 					<thead>
 						<tr>{columns.map((name)=>(<td>{name.Header}</td>))}</tr>
@@ -351,8 +375,9 @@ class App extends Component {
             {this.state.auctionListJSON.map((o)=>(<tr><td>{o.title}</td><td>{o.price}</td><td>{o.starttime}</td><td>{o.endtime}</td><td>{o.description}</td><td><input type="button" value="Bid" 
             onClick={()=>this.handleBidAuction(o)}/></td></tr>))}
           </tbody>
-				</Table>
-          <Card>
+		    </Table>
+
+        <Card>
             <CardBody>
               <CardTitle tag="h5">
                 {this.state.auctionObject.title}
@@ -382,9 +407,10 @@ class App extends Component {
                 </Button>
               </Row>
             </CardBody>
-          </Card>
+        </Card>
         </div>
       </div>
+      </Router>
     );
   }
 }
