@@ -13,34 +13,6 @@ contract Auction {
     address payable public highestBidder;
     mapping(address => uint256) public fundsByBidder;
     uint public highestBindingBid = 0;
-          
-    
-    
-    constructor (address payable  _owner, string  memory _title, uint _startingPrice, uint _startTime, uint _endTime, string memory _description) 
-        onlyNotOwner 
-        onlyHigherprice
-        public {
-        // if (_owner == address(0)) revert();
-        if (bytes(_title).length == 0) revert();
-        // if (_startingPrice<0) revert();
-        
-        title = _title;
-        startingPrice = _startingPrice;
-        owner = _owner;
-        startTime = _startTime;
-        endTime = _endTime;
-        description = _description;
-    }
-
-    function getHighestBid()
-        public view
-        returns (uint)
-    {
-        return fundsByBidder[highestBidder];
-    }
-    
-    event LogBid(address bidder, uint bid, address highestBidder, uint highestBindingBid);
-    event LogWithdrawal(address withdrawer, address withdrawalAccount, uint amount);
 
 
     function getTitle()
@@ -77,7 +49,37 @@ contract Auction {
         returns (string memory)
     {
         return description;
+    }      
+    
+    
+    constructor (address payable  _owner, string  memory _title, uint _startingPrice, uint _startTime, uint _endTime, string memory _description) 
+        public {
+        // if (_owner == address(0)) revert();
+        if (bytes(_title).length == 0) revert();
+        if (_startingPrice<0) revert();
+        if ( now > _endTime) revert();
+        if (bytes(_description).length == 0) revert();
+        
+        title = _title;
+        startingPrice = _startingPrice;
+        owner = _owner;
+        startTime = _startTime;
+        endTime = _endTime;
+        description = _description;
     }
+
+    function getHighestBid()
+        public view
+        returns (uint)
+    {
+        return fundsByBidder[highestBidder];
+    }
+    
+    event LogBid(address bidder, uint bid, address highestBidder, uint highestBindingBid);
+    event LogWithdrawal(address withdrawer, address withdrawalAccount, uint amount);
+
+
+    
 
     function placeBid ()
         payable

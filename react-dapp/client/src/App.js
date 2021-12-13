@@ -17,7 +17,7 @@ class App extends Component {
             contract: null, 
             newValue: "",
             title:"",
-            price:"",
+            price:"0",
             description:"",
             startdate:"",
             starttime:"",
@@ -86,7 +86,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x4f881F8F3983E234b3BAF755564f7665BD4c71f7"
+    auctionInstance.options.address = "0xADeC08FfF4a9c9740Edcd0334062b94370Ee3406"
     const response = await auctionInstance.methods.returnAllAuctions().call();
     this.setState({auctionList: response});
     const index = response.length-1;
@@ -136,7 +136,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x4f881F8F3983E234b3BAF755564f7665BD4c71f7"
+    auctionInstance.options.address = "0xADeC08FfF4a9c9740Edcd0334062b94370Ee3406"
     this.setState({auctionContract: auctionInstance})
     const {accounts, contract} = this.state;
     const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
@@ -150,7 +150,13 @@ class App extends Component {
     console.log(ContractStartUnixTime);
     console.log(ContractEndUnixTime);
     console.log(this.state.description);
-    await auctionInstance.methods.createAuction(this.state.title,BidPrice,ContractStartUnixTime,ContractEndUnixTime,this.state.description).send({from:accounts[0]});
+    try{
+      await auctionInstance.methods.createAuction(this.state.title,BidPrice,ContractStartUnixTime,ContractEndUnixTime,this.state.description).send({from:accounts[0]});
+
+    }catch(error)
+    {
+      await alert(" Error in creating auction \n Please make sure you that : \n 1) You have enough funds to deploy the contract \n 2) Title and description are not empty \n 3) Starting price is not zero \n 4) Current time should be less than end time");
+    }
     
     // console.log( auctionInstance.methods.returnAllAuctions().call());
     
@@ -186,9 +192,9 @@ class App extends Component {
         console.log("Error in bidding");
         await alert(" Error in bidding \n Please make sure you that : \n 1) You are not the owner of this contract \n 2) Current Time is beyond start time and before end time \n 3) Your bid is not below the starting Price");
       }
-    console.log("yahan kya hua hai");
+    // console.log("yahan kya hua hai");
     // console.log(ans);
-    console.log("maja hi aa gaya");
+    // console.log("maja hi aa gaya");
   }
   async handleWithdraw(){
     const web3 = this.state.web3;

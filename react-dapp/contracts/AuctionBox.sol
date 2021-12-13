@@ -13,6 +13,7 @@ contract AuctionBox{
         string memory _description
         ) public{
         // set the new instance
+        if (_startingPrice<0) revert();
         Auction newAuction = new Auction(msg.sender, _title, _startingPrice, _startTime,_endTime,_description);
         // push the auction address to auctions array
         auctions.push(newAuction);
