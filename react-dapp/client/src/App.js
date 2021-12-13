@@ -15,11 +15,11 @@ const Styles = styled.div`
   background: lavender;
   padding: 20px`;
 //to prevent the table from displaying without clicking the button "show all auctions"
-let check = false;
-let check2 = false;
-let check_withdraw = false;
+// let check = false;
+// let check2 = false;
+// let check_withdraw = false;
 //to prevent the Bid Card from displaying without clicking the button "Bid"
-let check_bid = false;
+// let check_bid = false;
   class App extends Component {
   state = { storageValue: "",
             web3: null, 
@@ -37,7 +37,11 @@ let check_bid = false;
             auctionListJSON:[],
             auctionObject: [],
             auctionBidPrice:0,
-            isBid:""
+            isBid:"",
+            check_bid:false,
+            check: false,
+            check2: false,
+            check_withdraw: false
           };
 
   componentDidMount = async () => {
@@ -87,10 +91,13 @@ let check_bid = false;
   }
   async allAuctions(event){
     event.preventDefault();
-    check = true;
-    check2 = false;
-    check_bid = false;
-    check_withdraw = false;
+    this.setState({check:true})
+    // check = true;
+    // check2 = false;
+    this.setState({check2:false})
+    this.setState({check_bid: false});
+    // check_withdraw = false;
+    this.setState({check_withdraw:false})
     console.log(this.state);
     const web3 = this.state.web3;
     const networkId = await web3.eth.net.getId();
@@ -143,10 +150,13 @@ let check_bid = false;
   }
   async withdrawAuctions(event){
     event.preventDefault();
-    check2 = true;
-    check = false;
-    check_bid = false;
-    check_withdraw = false;
+    this.setState({check2:true});
+    this.setState({check:false});
+    // check2 = true;
+    // check = false;
+    this.setState({check_bid:false});
+    // check_withdraw = false;
+    this.setState({check_withdraw:false});
     const web3 = this.state.web3;
     const networkId = await web3.eth.net.getId();
     const deployedNetwork = AuctionBoxContract.networks[networkId];
@@ -230,6 +240,18 @@ let check_bid = false;
     // console.log( auctionInstance.methods.returnAllAuctions().call());
     
   }
+  handleCancel(){
+    console.log("haan hua main");
+    this.setState({check_bid:false});
+    this.setState({check_withdraw:false});
+    this.setState({check:false});
+    this.setState({check2:false});
+  }
+  handleCancel2(){
+    console.log("haan hua main");
+    this.setState({check_bid:false});
+    this.setState({check_withdraw:false});
+  }
   async handleBidSubmit(){
     const web3 = this.state.web3;
     const networkId = await web3.eth.net.getId();
@@ -301,8 +323,9 @@ let check_bid = false;
   }
   
   handleBidAuction(o){
-    check_bid = true;
-    check_withdraw = false;
+    this.setState({check_bid:true});
+    this.setState({check_withdraw:false});
+    // check_withdraw = false;
     console.log("ooo yeah baby");
     console.log(o.price);
     console.log(o.title);
@@ -311,8 +334,9 @@ let check_bid = false;
     console.log("main mar jawa");
   }
   handleWithdrawAuction(o){
-    check_withdraw = true;
-    check_bid = false;
+    // check_withdraw = true;
+    this.setState({check_withdraw:true})
+    this.setState({check_bid:false});
     this.setState({auctionObject: o})
   }
   
@@ -335,10 +359,10 @@ let check_bid = false;
       },{
         Header: 'Description',
         accessor: 'description'
-      },check && {
+      },this.state.check && {
         Header: 'Bid Here',
         accessor: 'bid'
-      },check2 && {
+      },this.state.check2 && {
         Header: 'Withdraw',
         accessor: 'withdraw'
       }].filter(item=>item)
@@ -432,11 +456,19 @@ let check_bid = false;
         </Styles>        
         <div>
         
-        {(check || check2) && <div style={{
+        {(this.state.check || this.state.check2) && <div style={{
             display: 'block', padding: 30
-        }}><div><h1>ONGOING AUCTIONS</h1></div><Table striped hover responsive className="border" bordered={true}>
-					{check && <caption>Please click on the Bid Button if you want to bid on an item.</caption>}
-          {check2 && <caption>Please click on the Withdraw Button if you want to withdraw your bid.</caption>}
+        }}><div><h1>ONGOING AUCTIONS</h1></div>
+        <div style={{textAlign: "right"}}><Button onClick={this.handleCancel.bind(this)} close/></div>
+        
+        <Table striped hover responsive className="border" bordered={true}>
+					{this.state.check && <caption>Please click on the Bid Button if you want to bid on an item.</caption>}
+          {this.state.check2 && <caption>Please click on the Withdraw Button if you want to withdraw your bid.</caption>}
+          {/* <caption>
+                <Button className="cancelButton" onClick={this.handleCancel.bind(this)}>
+                  Close
+                </Button>
+          </caption> */}
           <thead className="table-dark">
 						<tr>{columns.map((name)=>(<td>{name.Header}</td>))}</tr>
 					</thead>
@@ -446,9 +478,9 @@ let check_bid = false;
             <td>{o.starttime}</td>
             <td>{o.endtime}</td>
             <td>{o.description}</td>
-            {check && <td><input type="button" 
+            {this.state.check && <td><input type="button" 
             className="submitButton" value="Bid" onClick={()=>this.handleBidAuction(o)}/></td>}
-            {check2 && <td><input type="button" className="submitButton" value="Withdraw" 
+            {this.state.check2 && <td><input type="button" className="submitButton" value="Withdraw" 
             onClick={()=>this.handleWithdrawAuction(o)}/></td>}
             </tr>))}
           </tbody>
@@ -460,7 +492,7 @@ let check_bid = false;
 
 
         <Styles>
-        {check_bid && <div style={{
+        {this.state.check_bid && <div style={{
             display: 'block', padding: 30
         }}>
           <Card className="form">
@@ -498,13 +530,16 @@ let check_bid = false;
                 <Button className="submitButton" onClick={this.handleBidSubmit.bind(this)}>
                   BID
                 </Button>
+                <Button className="cancelButton" onClick={this.handleCancel2.bind(this)}>
+                  Cancel
+                </Button>
               </Row>
             </CardBody>
           </Card>
           </div>}
           </Styles>
           <Styles>
-        {check_withdraw && <div style={{
+        {this.state.check_withdraw && <div style={{
             display: 'block', padding: 30
         }}>
           <Card className="form">
@@ -531,6 +566,9 @@ let check_bid = false;
               <Row>
                 <Button className="submitButton" onClick={this.handleWithdraw.bind(this)} >
                   WITHDRAW
+                </Button>
+                <Button className="cancelButton" onClick={this.handleCancel2.bind(this)}>
+                  Cancel
                 </Button>
               </Row>
             </CardBody>

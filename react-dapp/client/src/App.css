@@ -29,6 +29,14 @@
   margin: 20px 0px;
 }
 
+.cancelButton {
+  background-color: #4944445e;
+  color: rgb(29, 27, 27);
+  font-family: sans-serif;
+  font-size: 14px;
+  margin: 20px 0px;
+}
+
 label {
   text-align: left;
   color: #3d3d3d;
