@@ -98,10 +98,12 @@ contract Auction {
             return true;
         }
         
-    function withdraw() public{
+    function withdraw()
+        onlyAfterEnd 
+        public{
         //the owner and bidders can finalize the auction.
         // require(msg.sender == owner || bids[msg.sender] > 0);
-
+        if (fundsByBidder[msg.sender] <0) revert();
         address payable recipiant;
         uint value;
 
@@ -145,6 +147,10 @@ contract Auction {
         _;
     }
 
+    modifier onlyAfterEnd {
+        if (now < endTime) revert();
+        _;
+    }
 
     modifier onlyEndedOrCanceled {
         if (block.number < endTime) revert();

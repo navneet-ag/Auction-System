@@ -86,7 +86,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0xADeC08FfF4a9c9740Edcd0334062b94370Ee3406"
+    auctionInstance.options.address = "0x73607ab44eE6De9a800bD528A587c6640a540d9C"
     const response = await auctionInstance.methods.returnAllAuctions().call();
     this.setState({auctionList: response});
     const index = response.length-1;
@@ -136,7 +136,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0xADeC08FfF4a9c9740Edcd0334062b94370Ee3406"
+    auctionInstance.options.address = "0x73607ab44eE6De9a800bD528A587c6640a540d9C"
     this.setState({auctionContract: auctionInstance})
     const {accounts, contract} = this.state;
     const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
@@ -215,13 +215,19 @@ class App extends Component {
     // const selectedAuction = AuctionContract(this.state.auctionObject.address);
     // this.state.isBid = true;
     const { accounts } = this.state;
-    const ans = await selectedAuction.methods
+    try {
+      const ans = await selectedAuction.methods
         .withdraw()
         .send({
           from: accounts[0]
         });
+    }catch(error)
+    {
+      await alert("Error in withdrawing funds \n 1) Auction has not ended yet \n 2) You might have not bid for this auction ");
+    }
+
     console.log("ab batao yahan kya hua hai");
-    console.log(ans);
+    // console.log(ans);
     console.log("firse maja hi aa gaya");
   }
   
