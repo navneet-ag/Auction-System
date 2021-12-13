@@ -2,15 +2,25 @@ import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import AuctionContract from "./contracts/Auction.json";
 import AuctionBoxContract from "./contracts/AuctionBox.json";
-import { Row, Card, CardBody, CardTitle, CardSubtitle, CardText, Button, Col, Table } from 'reactstrap';
+import { Container, Row, Card, CardBody, CardTitle, CardSubtitle, CardText, Button, Col, Table, CardHeader } from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import moment from 'moment'
 import getWeb3 from "./getWeb3";
-
+import Header from "./header";
+import styled from "styled-components";
+import { useSpring, animated } from "react-spring";
 
 import "./App.css";
-
-class App extends Component {
+const Styles = styled.div`
+  background: lavender;
+  padding: 20px`;
+//to prevent the table from displaying without clicking the button "show all auctions"
+let check = false;
+let check2 = false;
+let check_withdraw = false;
+//to prevent the Bid Card from displaying without clicking the button "Bid"
+let check_bid = false;
+  class App extends Component {
   state = { storageValue: "",
             web3: null, 
             accounts: null, 
@@ -77,7 +87,11 @@ class App extends Component {
   }
   async allAuctions(event){
     event.preventDefault();
-
+    check = true;
+    check2 = false;
+    check_bid = false;
+    check_withdraw = false;
+    console.log(this.state);
     const web3 = this.state.web3;
     const networkId = await web3.eth.net.getId();
     const deployedNetwork = AuctionBoxContract.networks[networkId];
@@ -86,7 +100,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x73607ab44eE6De9a800bD528A587c6640a540d9C"
+    auctionInstance.options.address = "0x54a2fA6C13a01EDeb9Ca2B7092A2Bf222078fa0f"
     const response = await auctionInstance.methods.returnAllAuctions().call();
     this.setState({auctionList: response});
     const index = response.length-1;
@@ -127,6 +141,62 @@ class App extends Component {
     console.log(individualAuction);
     this.setState({auctionListJSON: individualAuction})
   }
+  async withdrawAuctions(event){
+    event.preventDefault();
+    check2 = true;
+    check = false;
+    check_bid = false;
+    check_withdraw = false;
+    const web3 = this.state.web3;
+    const networkId = await web3.eth.net.getId();
+    const deployedNetwork = AuctionBoxContract.networks[networkId];
+    console.log("lets see if this works");
+    const auctionInstance = new web3.eth.Contract(
+      AuctionBoxContract.abi,
+      deployedNetwork && deployedNetwork.address,
+    );
+    auctionInstance.options.address = "0x54a2fA6C13a01EDeb9Ca2B7092A2Bf222078fa0f"
+    const response = await auctionInstance.methods.returnAllAuctions().call();
+    this.setState({auctionList: response});
+    const index = response.length-1;
+    const individualAuction = await Promise.all(response.map(async(item)=>{
+      const auction_1 = new web3.eth.Contract(
+        AuctionContract.abi,
+        deployedNetwork && deployedNetwork.address,
+      );
+      auction_1.options.address = item;
+      return {title: await auction_1.methods.getTitle().call(),
+              address: auction_1.options.address, 
+              price: web3.utils.fromWei(await auction_1.methods.getPrice().call() ,'ether'),
+              starttime: new Intl.DateTimeFormat('en-US', 
+                                                { year: 'numeric',
+                                                  month: '2-digit',
+                                                  day: '2-digit', 
+                                                  hour: '2-digit', 
+                                                  minute: '2-digit', 
+                                                  second: '2-digit' 
+                                                }
+                                                ).format(
+                                                        await auction_1.methods.getStartTime().call()*1000
+                                                        ),
+              endtime:new Intl.DateTimeFormat('en-US', 
+                                              { year: 'numeric',
+                                                month: '2-digit',
+                                                day: '2-digit', 
+                                                hour: '2-digit', 
+                                                minute: '2-digit', 
+                                                second: '2-digit' 
+                                              }
+                                              ).format(
+                                                      await auction_1.methods.getEndTime().call()*1000
+                                                      ),
+              description: await auction_1.methods.getDescription().call()
+            }
+  }))
+    console.log(individualAuction);
+    this.setState({auctionListJSON: individualAuction})
+  }
+  
   async handleSubmit(event){
     event.preventDefault();
     const web3 = this.state.web3;
@@ -136,7 +206,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x73607ab44eE6De9a800bD528A587c6640a540d9C"
+    auctionInstance.options.address = "0x54a2fA6C13a01EDeb9Ca2B7092A2Bf222078fa0f"
     this.setState({auctionContract: auctionInstance})
     const {accounts, contract} = this.state;
     const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
@@ -152,7 +222,6 @@ class App extends Component {
     console.log(this.state.description);
     try{
       await auctionInstance.methods.createAuction(this.state.title,BidPrice,ContractStartUnixTime,ContractEndUnixTime,this.state.description).send({from:accounts[0]});
-
     }catch(error)
     {
       await alert(" Error in creating auction \n Please make sure you that : \n 1) You have enough funds to deploy the contract \n 2) Title and description are not empty \n 3) Starting price is not zero \n 4) Current time should be less than end time");
@@ -232,6 +301,8 @@ class App extends Component {
   }
   
   handleBidAuction(o){
+    check_bid = true;
+    check_withdraw = false;
     console.log("ooo yeah baby");
     console.log(o.price);
     console.log(o.title);
@@ -239,6 +310,12 @@ class App extends Component {
     // console.log(this.state.auctionObject.price)
     console.log("main mar jawa");
   }
+  handleWithdrawAuction(o){
+    check_withdraw = true;
+    check_bid = false;
+    this.setState({auctionObject: o})
+  }
+  
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -258,15 +335,23 @@ class App extends Component {
       },{
         Header: 'Description',
         accessor: 'description'
-      },{
+      },check && {
         Header: 'Bid Here',
         accessor: 'bid'
-        }]
+      },check2 && {
+        Header: 'Withdraw',
+        accessor: 'withdraw'
+      }].filter(item=>item)
+
     return (
       <div className="App">
-        <h1>Welcome to this dapp!</h1>
+        <Header/>
+        <div className="navbar-dark  d-print-none">
+			</div>
+      <Styles>
         <form onSubmit={this.handleSubmit.bind(this)}>
-        <div class="form-group">
+        <div className="form-group">
+          <h1>Auction Form</h1>
         <label>Title:
           <input 
             type="text" 
@@ -276,7 +361,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Starting Price:
           <input 
             type="text" 
@@ -286,7 +371,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Description:
           <input 
             type="text" 
@@ -296,7 +381,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Starting Date:
           <input 
             type="date" 
@@ -306,7 +391,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Starting Time:
           <input 
             type="time" 
@@ -316,7 +401,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Ending Date:
           <input 
             type="date" 
@@ -326,7 +411,7 @@ class App extends Component {
           />
         </label>
         </div>
-        <div class="form-group">
+        <div className="form-group">
         <label>Ending Time:
           <input 
             type="time" 
@@ -336,35 +421,72 @@ class App extends Component {
           />
         </label>
         </div>
-          <input type="submit" value="Create Auction"/>
+          <input type="submit" className="submitButton" value="Create Auction"/>
+          <input type="button" className="submitButton" value="View All Auctions" onClick={this.allAuctions.bind(this)}/>
+          <input type="button" className="submitButton" value="Withdraw Your Bid" onClick={this.withdrawAuctions.bind(this)}/>
         </form>
-        <form onSubmit={this.allAuctions.bind(this)}>
-          <input type="submit" value="View All Auction"/>
-        </form>
-        
+
+        {/* <form onSubmit={this.allAuctions.bind(this)}>
+          <input type="submit" className="submitButton" value="View All Auctions"/>
+        </form> */}
+        </Styles>        
         <div>
-        <Table striped hover responsive className="border">
-					<thead>
+        
+        {(check || check2) && <div style={{
+            display: 'block', padding: 30
+        }}><div><h1>ONGOING AUCTIONS</h1></div><Table striped hover responsive className="border" bordered={true}>
+					{check && <caption>Please click on the Bid Button if you want to bid on an item.</caption>}
+          {check2 && <caption>Please click on the Withdraw Button if you want to withdraw your bid.</caption>}
+          <thead className="table-dark">
 						<tr>{columns.map((name)=>(<td>{name.Header}</td>))}</tr>
 					</thead>
           <tbody>
-            {this.state.auctionListJSON.map((o)=>(<tr><td>{o.title}</td><td>{o.price}</td><td>{o.starttime}</td><td>{o.endtime}</td><td>{o.description}</td><td><input type="button" value="Bid" 
-            onClick={()=>this.handleBidAuction(o)}/></td></tr>))}
+            {this.state.auctionListJSON.map((o)=>(<tr><td>{o.title}</td>
+            <td>{o.price}</td>
+            <td>{o.starttime}</td>
+            <td>{o.endtime}</td>
+            <td>{o.description}</td>
+            {check && <td><input type="button" 
+            className="submitButton" value="Bid" onClick={()=>this.handleBidAuction(o)}/></td>}
+            {check2 && <td><input type="button" className="submitButton" value="Withdraw" 
+            onClick={()=>this.handleWithdrawAuction(o)}/></td>}
+            </tr>))}
           </tbody>
-				</Table>
-          <Card>
+          
+				</Table></div>}
+        
+        
+
+
+
+        <Styles>
+        {check_bid && <div style={{
+            display: 'block', padding: 30
+        }}>
+          <Card className="form">
             <CardBody>
               <CardTitle tag="h5">
-                {this.state.auctionObject.title}
+                {/* Place a Bid */}
+                {/* {this.state.auctionObject.title} */}
               </CardTitle>
               <CardSubtitle
                 className="mb-2 text-muted"
                 tag="h6"
               >
-                {this.state.auctionObject.price}
+                {/* {this.state.auctionObject.price} */}
               </CardSubtitle>
+              <Card>
+                <CardHeader style={{backgroundColor: "black", color: "white"}}>PLACE A BID</CardHeader>
+                <ul className="list-group list-group-flush">
+                  <li className="list-group-item" style={{textAlign: "left"}}>TITLE : {this.state.auctionObject.title}</li>
+                  <li className="list-group-item" style={{textAlign: "left"}}>Starting Price : {this.state.auctionObject.price}</li>
+                  <li className="list-group-item" style={{textAlign: "left"}}>Address : {this.state.auctionObject.address}</li>
+                  <li className="list-group-item" style={{textAlign: "left"}}>Description : {this.state.auctionObject.description}</li>
+                </ul>
+              </Card>
               <CardText>
-                Please enter the amount you want to bid here:
+                <p style={{margin: "10px"}}>Please enter the amount you want to bid here:
+                </p>
                 <input 
                   type="number" 
                   name="auctionBidPrice" 
@@ -373,16 +495,48 @@ class App extends Component {
                 /> 
               </CardText>
               <Row>
-                <Button onClick={this.handleBidSubmit.bind(this)}>
+                <Button className="submitButton" onClick={this.handleBidSubmit.bind(this)}>
                   BID
                 </Button>
-                
-                <Button style = {{color:'blue'}} onClick={this.handleWithdraw.bind(this)} >
+              </Row>
+            </CardBody>
+          </Card>
+          </div>}
+          </Styles>
+          <Styles>
+        {check_withdraw && <div style={{
+            display: 'block', padding: 30
+        }}>
+          <Card className="form">
+            <CardBody>
+              <CardTitle tag="h5">
+                {/* Place a Bid */}
+                {/* {this.state.auctionObject.title} */}
+              </CardTitle>
+              <CardSubtitle
+                className="mb-2 text-muted"
+                tag="h6"
+              >
+                {/* {this.state.auctionObject.price} */}
+              </CardSubtitle>
+              <Card>
+                <CardHeader style={{backgroundColor: "black", color: "white"}}>Withdraw Details</CardHeader>
+                <ul className="list-group list-group-flush">
+                  <li className="list-group-item" style={{textAlign: "left"}}>TITLE : {this.state.auctionObject.title}</li>
+                  <li className="list-group-item" style={{textAlign: "left"}}>Starting Price : {this.state.auctionObject.price}</li>
+                  <li className="list-group-item" style={{textAlign: "left"}}>Address : {this.state.auctionObject.address}</li>
+                  <li className="list-group-item" style={{textAlign: "left"}}>Description : {this.state.auctionObject.description}</li>
+                </ul>
+              </Card>
+              <Row>
+                <Button className="submitButton" onClick={this.handleWithdraw.bind(this)} >
                   WITHDRAW
                 </Button>
               </Row>
             </CardBody>
           </Card>
+          </div>}
+          </Styles>  
         </div>
       </div>
     );
