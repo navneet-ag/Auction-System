@@ -13,14 +13,23 @@ After the auction has ended, the owner can withdraw highest bid and all other bi
 
 ## Running it Locally
 
-0. Clone this repo
+1. Clone this repo
 
 ```bash
 git clone https://github.dev/navneet-ag/Auction-System
 cd Auction-System
 ```
 
-0. Start truffle
+2. Start truffle
 ```bash
-
+truffle migrate --reset
 ```
+
+3. Open different terminal
+```bash
+cd client
+npm install
+npm run start
+```
+
+If you `npm run start`, the app will be available at <http://localhost:3000>.
