@@ -53,6 +53,7 @@ class App extends Component {
 
       this.handleChange = this.handleChange.bind(this);
       this.handleSubmit = this.handleSubmit.bind(this);
+      // this.profile = this.profile.bind(this);
       // Get network provider and web3 instance.
       const web3 = await getWeb3();
 
@@ -70,6 +71,7 @@ class App extends Component {
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.setState({ web3, accounts, contract: instance }, this.runExample);
+      // this.profile();
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -111,7 +113,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x54a2fA6C13a01EDeb9Ca2B7092A2Bf222078fa0f"
+    auctionInstance.options.address = "0xD95C03949e662cff7C55a8fCbf4e2F565Ea3aa6B"
     const response = await auctionInstance.methods.returnAllAuctions().call();
     this.setState({auctionList: response});
     const index = response.length-1;
@@ -169,7 +171,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x54a2fA6C13a01EDeb9Ca2B7092A2Bf222078fa0f"
+    auctionInstance.options.address = "0xD95C03949e662cff7C55a8fCbf4e2F565Ea3aa6B"
     const response = await auctionInstance.methods.returnAllAuctions().call();
     this.setState({auctionList: response});
     const index = response.length-1;
@@ -220,7 +222,7 @@ class App extends Component {
       AuctionBoxContract.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    auctionInstance.options.address = "0x54a2fA6C13a01EDeb9Ca2B7092A2Bf222078fa0f"
+    auctionInstance.options.address = "0xD95C03949e662cff7C55a8fCbf4e2F565Ea3aa6B"
     this.setState({auctionContract: auctionInstance})
     const {accounts, contract} = this.state;
     const BidPrice = web3.utils.toWei(this.state.price, 'ether'); 
@@ -286,6 +288,7 @@ class App extends Component {
           from: fromAddress,
           value: bidPriceWei,
         });
+        await alert("Your Bid has been successfully submitted!");
       }catch(error)
       {
         console.log("Error in bidding");
@@ -295,7 +298,7 @@ class App extends Component {
     // console.log(ans);
     // console.log("maja hi aa gaya");
     this.setState({check_bid:false});
-    await alert("Your Bid has been successfully submitted!");
+    
   }
   async handleWithdraw(){
     const web3 = this.state.web3;
@@ -322,7 +325,8 @@ class App extends Component {
         .send({
           from: accounts[0]
         });
-    }catch(error)
+        await alert("Your balance has been successfully transfered!");
+      }catch(error)
     {
       await alert("Error in withdrawing funds \n 1) Auction has not ended yet \n 2) You might have not bid for this auction ");
     }
@@ -331,7 +335,7 @@ class App extends Component {
     // console.log(ans);
     // console.log("firse maja hi aa gaya");
     this.setState({check_withdraw:false});
-    await alert("Your balance has been successfully transfered!");
+    
   }
   
   handleBidAuction(o){
@@ -351,25 +355,25 @@ class App extends Component {
     this.setState({check_bid:false});
     this.setState({auctionObject: o})
   }
-  // async profile(){
-  //   const web3 = this.state.web3;
-  //   const currentAddress = web3.eth.accounts.givenProvider.selectedAddress;
-  //   console.log("ye kya ho rha hai");
-  //   var currentBalance = 0;
-  //   await web3.eth.getBalance(currentAddress, function(err, result){
-  //     if(err){
-  //       console.log(err);
-  //     }
-  //     else{
-  //       currentBalance = web3.utils.fromWei(result, 'ether');
-  //       console.log(currentBalance);
-  //       console.log(web3.utils.fromWei(result, 'ether')+"ETH")
-        
-  //     }
-  //   })
-  //   console.log("yahaha");
-  //   return currentBalance;
-  // }
+  async profile(){
+    const web3 = this.state.web3;
+    const currentAddress = web3.eth.accounts.givenProvider.selectedAddress;
+    console.log("ye kya ho rha hai");
+    var currentBalance = 0;
+    await web3.eth.getBalance(currentAddress, function(err, result){
+      if(err){
+        console.log(err);
+      }
+      else{
+        currentBalance = web3.utils.fromWei(result, 'ether');
+        console.log(currentBalance);
+        console.log(web3.utils.fromWei(result, 'ether')+"ETH")
+        this.setState({balance: currentBalance})
+      }
+    })
+    console.log("yahaha");
+    // return currentBalance;
+  }
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -400,20 +404,20 @@ class App extends Component {
   // TO BE LOOKED INTO>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     const web3 = this.state.web3;
     const currentAddress = web3.eth.accounts.givenProvider.selectedAddress;
-    console.log("ye kya ho rha hai");
-    // var currentBalance;
-    web3.eth.getBalance(currentAddress, function(err, result){
-      if(err){
-        console.log(err);
-      }
-      else{
-        const currentBalance = web3.utils.fromWei(result, 'ether');
-        console.log(currentBalance);
-        console.log(web3.utils.fromWei(result, 'ether')+"ETH");
-        // this.setState({balance:currentBalance});
-      }
-    })
-    console.log("yahaha");
+    // console.log("ye kya ho rha hai");
+    // var balance;
+    // web3.eth.getBalance(currentAddress, function(err, result){
+    //   if(err){
+    //     console.log(err);
+    //   }
+    //   else{
+    //     const currentBalance = web3.utils.fromWei(result, 'ether');
+    //     console.log(currentBalance);
+    //     console.log(web3.utils.fromWei(result, 'ether')+"ETH");
+    //     this.setState({balance:currentBalance});
+    //   }
+    // })
+    // console.log("yahaha");
     // console.log(currentBalance);
     // currentBalance = web3.toDecimal(currentBalance);
     // console.log(currentBalance);
