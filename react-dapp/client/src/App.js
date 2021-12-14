@@ -44,7 +44,8 @@ class App extends Component {
             check2: false,
             check_withdraw: false,
             check_form: false,
-            check_profile: true
+            check_profile: true,
+            balance: "0"
           };
 
   componentDidMount = async () => {
@@ -97,7 +98,7 @@ class App extends Component {
     this.setState({check:true, check_form:false,check_profile:false})
     // check = true;
     // check2 = false;
-    this.setState({check2:false})
+    this.setState({check2:false});
     this.setState({check_bid: false});
     // check_withdraw = false;
     this.setState({check_withdraw:false})
@@ -350,36 +351,25 @@ class App extends Component {
     this.setState({check_bid:false});
     this.setState({auctionObject: o})
   }
-  
-  async profile(){
-    console.log("yes i am being called");
-    const web3 = this.state.web3;
-
-    const currentAddress = web3.eth.accounts.givenProvider.selectedAddress;
-    console.log("gasolinaaaaaa");
-    var currentBalance = await Promise.all(web3.eth.getBalance(currentAddress));
-    // currentBalance = web3.toDecimal(currentBalance);
-    console.log("yahoooooooo");
-    console.log(currentBalance);
-  }
-  async profile(){
-    const web3 = this.state.web3;
-    const currentAddress = web3.eth.accounts.givenProvider.selectedAddress;
-    console.log("ye kya ho rha hai");
-    var currentBalance = 0;
-    await web3.eth.getBalance(currentAddress, function(err, result){
-      if(err){
-        console.log(err);
-      }
-      else{
-        currentBalance = web3.utils.fromWei(result, 'ether');
-        console.log(currentBalance);
-        console.log(web3.utils.fromWei(result, 'ether')+"ETH")
-      }
-    })
-    console.log("yahaha");
-    return currentBalance;
-  }
+  // async profile(){
+  //   const web3 = this.state.web3;
+  //   const currentAddress = web3.eth.accounts.givenProvider.selectedAddress;
+  //   console.log("ye kya ho rha hai");
+  //   var currentBalance = 0;
+  //   await web3.eth.getBalance(currentAddress, function(err, result){
+  //     if(err){
+  //       console.log(err);
+  //     }
+  //     else{
+  //       currentBalance = web3.utils.fromWei(result, 'ether');
+  //       console.log(currentBalance);
+  //       console.log(web3.utils.fromWei(result, 'ether')+"ETH")
+        
+  //     }
+  //   })
+  //   console.log("yahaha");
+  //   return currentBalance;
+  // }
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -419,7 +409,8 @@ class App extends Component {
       else{
         const currentBalance = web3.utils.fromWei(result, 'ether');
         console.log(currentBalance);
-        console.log(web3.utils.fromWei(result, 'ether')+"ETH")
+        console.log(web3.utils.fromWei(result, 'ether')+"ETH");
+        // this.setState({balance:currentBalance});
       }
     })
     console.log("yahaha");
@@ -455,7 +446,7 @@ class App extends Component {
                   <li className="list-group-item" style={{textAlign: "left"}}>
                     Public Address : {currentAddress}</li>
                   {/* <li className="list-group-item" style={{textAlign: "left"} } >
-                    Account Balance : idk why this is not working</li> */}
+                    Account Balance : {this.state.balance}</li> */}
                 </ul>
               </Card>
               <Row>
@@ -633,7 +624,7 @@ class App extends Component {
                 </ul>
               </Card>
               <CardText>
-                <p style={{margin: "10px"}}>Please enter the amount you want to bid here:
+                <p style={{margin: "10px"}}>Please enter the amount you want to bid here (ETH):
                 </p>
                 <input 
                   type="number" 
