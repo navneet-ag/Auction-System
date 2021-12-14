@@ -10,6 +10,9 @@ After the auction has ended, the owner can withdraw highest bid and all other bi
 
 * **Node** - v14.x.x (preferrably v14.17.0 for long term support)
 * **npm** - v7.x.x (preferrably 7.6.0)
+* **Web3.js** - v1.5.x (preferrably 1.5.3)
+* **Solidity** - v0.5.x (preferrably 0.5.16)
+* **Truffle** - v5.4.x (preferrably v.5.4.17)
 
 ## Running it Locally
 
@@ -20,12 +23,14 @@ git clone https://github.dev/navneet-ag/Auction-System
 cd Auction-System
 ```
 
-2. Start truffle
+2. Start truffle 
 ```bash
+compile
 truffle migrate --reset
 ```
+3. Copy the contract address from the truffle console and initalize the auctionInstance.options.address variable in the app.js
 
-3. Open different terminal
+4. Open different terminal and run the following commands
 ```bash
 cd client
 npm install
