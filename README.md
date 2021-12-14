@@ -1,10 +1,10 @@
 # Auction-System using Solidity
 
-We have created a sealed-bid auction system using Solidity, Truffle and React. You can create a new auctions by providing title, starting price, start time and date, end time and date and description of the product to be auctioned using ETH. 
+We have created a sealed-bid auction system using Solidity, Truffle and React. You can create a new auction by providing a title, starting price, start time and date, end time and date and the description of the product to be auctioned using ETH. 
 
-Anyone with the valid cryptocurrency wallet can create and bid on the auction. Only the owner cannot bid on his own auction.
+Anyone with a valid cryptocurrency wallet can create and bid on the auction. Only the owner cannot bid on his own auction.
 
-After the auction has ended, the owner can withdraw highest bid and all other bidders can withdraw theie bids.
+After the auction has ended, the owner can withdraw highest bid and all other bidders can withdraw their bids.
 
 ## Prerequisites
 
@@ -20,17 +20,18 @@ After the auction has ended, the owner can withdraw highest bid and all other bi
 
 ```bash
 git clone https://github.dev/navneet-ag/Auction-System
-cd Auction-System
+cd Auction-System/react-dapp
 ```
 
 2. Start truffle 
 ```bash
+truffle develop
 compile
-truffle migrate --reset
+migrate --reset
 ```
-3. Copy the contract address from the truffle console and initalize the auctionInstance.options.address variable in the app.js
+3. Copy the contract address from the truffle console and initalize the auctionInstance.options.address variable in the App.js file.
 
-4. Open different terminal and run the following commands
+4. Open a different terminal and run the following commands
 ```bash
 cd client
 npm install
