@@ -20,7 +20,8 @@ const Styles = styled.div`
 // let check_withdraw = false;
 //to prevent the Bid Card from displaying without clicking the button "Bid"
 // let check_bid = false;
-  class App extends Component {
+// let check_form = false;
+class App extends Component {
   state = { storageValue: "",
             web3: null, 
             accounts: null, 
@@ -41,7 +42,9 @@ const Styles = styled.div`
             check_bid:false,
             check: false,
             check2: false,
-            check_withdraw: false
+            check_withdraw: false,
+            check_form: false,
+            check_profile: true
           };
 
   componentDidMount = async () => {
@@ -91,7 +94,7 @@ const Styles = styled.div`
   }
   async allAuctions(event){
     event.preventDefault();
-    this.setState({check:true})
+    this.setState({check:true, check_form:false,check_profile:false})
     // check = true;
     // check2 = false;
     this.setState({check2:false})
@@ -150,7 +153,7 @@ const Styles = styled.div`
   }
   async withdrawAuctions(event){
     event.preventDefault();
-    this.setState({check2:true});
+    this.setState({check2:true, check_form:false,check_profile:false});
     this.setState({check:false});
     // check2 = true;
     // check = false;
@@ -245,12 +248,16 @@ const Styles = styled.div`
     this.setState({check_bid:false});
     this.setState({check_withdraw:false});
     this.setState({check:false});
-    this.setState({check2:false});
+    this.setState({check2:false, check_profile:true,check_form:false});
   }
   handleCancel2(){
     console.log("haan hua main");
     this.setState({check_bid:false});
     this.setState({check_withdraw:false});
+  }
+  handleAuctionCreation(){
+    console.log("ooo yeah");
+    this.setState({check_form:true, check:false, check_bid:false, check_withdraw:false, check_profile:false})
   }
   async handleBidSubmit(){
     const web3 = this.state.web3;
@@ -340,6 +347,35 @@ const Styles = styled.div`
     this.setState({auctionObject: o})
   }
   
+  async profile(){
+    console.log("yes i am being called");
+    const web3 = this.state.web3;
+
+    const currentAddress = web3.eth.accounts.givenProvider.selectedAddress;
+    console.log("gasolinaaaaaa");
+    var currentBalance = await Promise.all(web3.eth.getBalance(currentAddress));
+    // currentBalance = web3.toDecimal(currentBalance);
+    console.log("yahoooooooo");
+    console.log(currentBalance);
+  }
+  async profile(){
+    const web3 = this.state.web3;
+    const currentAddress = web3.eth.accounts.givenProvider.selectedAddress;
+    console.log("ye kya ho rha hai");
+    var currentBalance = 0;
+    await web3.eth.getBalance(currentAddress, function(err, result){
+      if(err){
+        console.log(err);
+      }
+      else{
+        currentBalance = web3.utils.fromWei(result, 'ether');
+        console.log(currentBalance);
+        console.log(web3.utils.fromWei(result, 'ether')+"ETH")
+      }
+    })
+    console.log("yahaha");
+    return currentBalance;
+  }
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -367,13 +403,92 @@ const Styles = styled.div`
         accessor: 'withdraw'
       }].filter(item=>item)
 
+  // TO BE LOOKED INTO>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    const web3 = this.state.web3;
+    const currentAddress = web3.eth.accounts.givenProvider.selectedAddress;
+    console.log("ye kya ho rha hai");
+    // var currentBalance;
+    web3.eth.getBalance(currentAddress, function(err, result){
+      if(err){
+        console.log(err);
+      }
+      else{
+        const currentBalance = web3.utils.fromWei(result, 'ether');
+        console.log(currentBalance);
+        console.log(web3.utils.fromWei(result, 'ether')+"ETH")
+      }
+    })
+    console.log("yahaha");
+    // console.log(currentBalance);
+    // currentBalance = web3.toDecimal(currentBalance);
+    // console.log(currentBalance);
+    // console.log("bwahahahhaha");
+    // console.log(currentAddress);
+    // this.setState({currentAccount: currentAddress})
+  // END>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     return (
       <div className="App">
         <Header/>
         <div className="navbar-dark  d-print-none">
 			</div>
       <Styles>
+        {/* add check condition for rendering etc. */}
+        {this.state.check_profile && <div style={{
+            display: 'block', padding: 30
+        }}>
+          <Card className="form">
+            <CardBody>
+              <CardTitle tag="h5">
+              </CardTitle>
+              <CardSubtitle
+                className="mb-2 text-muted"
+                tag="h6"
+              >
+              </CardSubtitle>
+              <Card>
+                <CardHeader style={{backgroundColor: "black", color: "white"}}>YOUR PROFILE</CardHeader>
+                <ul className="list-group list-group-flush">
+                  <li className="list-group-item" style={{textAlign: "left"}}>
+                    Public Address : {currentAddress}</li>
+                  {/* <li className="list-group-item" style={{textAlign: "left"} } >
+                    Account Balance : idk why this is not working</li> */}
+                </ul>
+              </Card>
+              <Row>
+                <Col>
+                <Button className="submitButton profileButton" onClick={this.handleAuctionCreation.bind(this)}>
+                  CREATE AUCTION
+                </Button>
+                </Col>
+                <Col>
+                <Button className="submitButton profileButton" onClick={this.allAuctions.bind(this)}>
+                  SHOW ALL AUCTIONS
+                </Button>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                <Button className="submitButton profileButton" onClick={this.allAuctions.bind(this)}>
+                  PLACE A BID
+                </Button>
+                </Col>
+                <Col>
+                <Button className="submitButton profileButton" onClick={this.withdrawAuctions.bind(this)}>
+                  WITHDRAW BID
+                </Button>
+                </Col>
+              </Row>
+            </CardBody>
+          </Card>
+          </div>}
+          </Styles>
+      <Styles>
+      {this.state.check_form && <div style={{
+            display: 'block', padding: 30
+        }}>
+        
         <form onSubmit={this.handleSubmit.bind(this)}>
+        <div style={{textAlign: "right"}}><Button onClick={this.handleCancel.bind(this)} close/></div>
         <div className="form-group">
           <h1>Auction Form</h1>
         <label>Title:
@@ -446,13 +561,14 @@ const Styles = styled.div`
         </label>
         </div>
           <input type="submit" className="submitButton" value="Create Auction"/>
-          <input type="button" className="submitButton" value="View All Auctions" onClick={this.allAuctions.bind(this)}/>
-          <input type="button" className="submitButton" value="Withdraw Your Bid" onClick={this.withdrawAuctions.bind(this)}/>
+          {/* <input type="button" className="submitButton" value="View All Auctions" onClick={this.allAuctions.bind(this)}/> */}
+          {/* <input type="button" className="submitButton" value="Withdraw Your Bid" onClick={this.withdrawAuctions.bind(this)}/> */}
         </form>
 
         {/* <form onSubmit={this.allAuctions.bind(this)}>
           <input type="submit" className="submitButton" value="View All Auctions"/>
         </form> */}
+        </div>}
         </Styles>        
         <div>
         
@@ -487,10 +603,6 @@ const Styles = styled.div`
           
 				</Table></div>}
         
-        
-
-
-
         <Styles>
         {this.state.check_bid && <div style={{
             display: 'block', padding: 30

@@ -29,6 +29,10 @@
   margin: 20px 0px;
 }
 
+.profileButton{
+  width: 200px;
+}
+
 .cancelButton {
   background-color: #4944445e;
   color: rgb(29, 27, 27);
