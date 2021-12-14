@@ -68,18 +68,10 @@ contract Auction {
         description = _description;
     }
 
-    function getHighestBid()
-        public view
-        returns (uint)
-    {
-        return fundsByBidder[highestBidder];
-    }
-    
+        
     event LogBid(address bidder, uint bid, address highestBidder, uint highestBindingBid);
     event LogWithdrawal(address withdrawer, address withdrawalAccount, uint amount);
 
-
-    
 
     function placeBid ()
         payable
