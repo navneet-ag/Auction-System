@@ -293,6 +293,8 @@ class App extends Component {
     // console.log("yahan kya hua hai");
     // console.log(ans);
     // console.log("maja hi aa gaya");
+    this.setState({check_bid:false});
+    await alert("Your Bid has been successfully submitted!");
   }
   async handleWithdraw(){
     const web3 = this.state.web3;
@@ -324,9 +326,11 @@ class App extends Component {
       await alert("Error in withdrawing funds \n 1) Auction has not ended yet \n 2) You might have not bid for this auction ");
     }
 
-    console.log("ab batao yahan kya hua hai");
+    // console.log("ab batao yahan kya hua hai");
     // console.log(ans);
-    console.log("firse maja hi aa gaya");
+    // console.log("firse maja hi aa gaya");
+    this.setState({check_withdraw:false});
+    await alert("Your balance has been successfully transfered!");
   }
   
   handleBidAuction(o){
